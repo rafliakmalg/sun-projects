@@ -1,6 +1,6 @@
 # Run from sun-projects/: docker compose up --build
-# Pintu masuk: gateway :8000 (/api/auth, /api/wms, /api/assistant, sisanya ke wms-web).
-# Port langsung tiap service (untuk debug): auth-ep 8001, wms-ep 8002, assistant-ep 8006, wms-web 3000.
+# Pintu masuk: gateway :8000 (/api/auth, /api/wms, /api/assistant, sisanya ke sun-web).
+# Port langsung tiap service (untuk debug): auth-ep 8001, wms-ep 8002, assistant-ep 8006, sun-web 3000.
 # *-ep containers get the same .test hostnames Herd uses, so assistant-ep's seeded
 # site URL (http://wms-ep.test/api) resolves inside the network unchanged.
 # Key JWT: keys/jwt-private.pem hanya untuk auth-ep, keys/jwt-public.pem untuk service lain (wms-ep, assistant-ep).
@@ -23,7 +23,7 @@ services:
     image: nginx:alpine
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on: [auth-ep, wms-ep, assistant-ep, wms-web]
+    depends_on: [auth-ep, wms-ep, assistant-ep, sun-web]
     ports: ["8000:80"]
 
   auth-ep:
@@ -93,13 +93,13 @@ services:
         aliases: [assistant-ep.test]
     ports: ["8006:80"]
 
-  wms-web:
+  sun-web:
     build:
-      context: ./wms-web
-      args:   # baked at build time; must be reachable from the browser
-        VITE_API_URL: http://localhost:8000/api
+      context: ./sun-web
+      args:   # baked at build time; relatif karena frontend dan API satu host (gateway)
+        VITE_API_URL: /api
         VITE_ASSISTANT_SITE: wms
-        VITE_ASSISTANT_URL: http://localhost:8000/api/assistant
+        VITE_ASSISTANT_URL: /api/assistant
     ports: ["3000:80"]
 
 volumes:

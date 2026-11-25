@@ -3,7 +3,7 @@
 /assistant-web/
 /auth-ep/
 /wms-ep/
-/wms-web/
+/sun-web/
 
 # key JWT dibuat oleh scripts/generate-keys.sh, tidak pernah di-commit
 /keys/*.pem

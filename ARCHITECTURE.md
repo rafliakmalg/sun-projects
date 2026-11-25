@@ -15,14 +15,13 @@ Batas waktu: pertengahan Desember 2026. Dokumen ini hidup: ubah saat keputusan b
 **Non-tujuan (sengaja tidak dikerjakan)**
 - Kubernetes, service mesh, tracing terdistribusi, RabbitMQ/Kafka (bonus jika waktu sisa).
 - Pajak, multi-mata-uang, HPP/costing, retur, pembayaran parsial (daftar "nanti" di bagian 10).
-- Micro-frontend. Frontend tetap satu SPA (`wms-web`) dengan menu per domain.
+- Micro-frontend. Frontend tetap satu SPA (`sun-web`) dengan menu per domain.
 
 ## 2. Gambaran besar
 
 ```mermaid
 flowchart LR
-    FE[wms-web React SPA] --> GW[nginx gateway :8000]
-    AFE[assistant-web] --> GW
+    FE[sun-web React SPA] --> GW[nginx gateway :8000]
     GW -->|/api/auth| AUTH[auth-ep]
     GW -->|/api/wms| WMS[wms-ep]
     GW -->|/api/purchasing| PUR[purchasing-ep]
@@ -99,7 +98,7 @@ Satu pintu masuk `http://localhost:8000`; frontend hanya mengenal satu base URL.
 /api/sales/*       -> sales-ep
 /api/accounting/*  -> accounting-ep
 /api/assistant/*   -> assistant-ep   (SSE: proxy_buffering off)
-/                  -> wms-web
+/                  -> sun-web
 ```
 
 Gateway hanya routing + `X-Request-Id` (CORS tetap ditangani Laravel di tiap service). Nama upstream di-resolve per request, jadi gateway tetap hidup saat satu service dimatikan (penting untuk skenario kegagalan). Tidak ada logika bisnis dan tidak ada verifikasi token di sini (tiap service tetap memeriksa sendiri).
@@ -182,15 +181,15 @@ Endpoint: `POST auth/login`, `POST auth/logout`, `GET auth/me`, CRUD `users`, CR
 
 ## 8. Frontend (React)
 
-- Tetap satu SPA `wms-web`; tambah grup menu **Pembelian, Penjualan, Akuntansi**. Komponen atomic design dan konvensi yang ada dipakai ulang.
+- Tetap satu SPA `sun-web` (sebelumnya `wms-web`), satu-satunya frontend; tambah grup menu **Pembelian, Penjualan, Akuntansi**. Komponen atomic design dan konvensi yang ada dipakai ulang.
 - Base URL tunggal ke gateway; modul API per domain di `src/features/<domain>`.
 - Login memanggil `/api/auth/login`, token JWT disimpan di store yang sudah ada.
 - Halaman status pesanan menampilkan status saga (`pending`, `received`, `receive_failed`) dengan polling ringan (react-query `refetchInterval`).
-- `assistant-web` dan panel chat tetap; hanya base URL ke gateway.
+- Halaman dan panel asisten ada di `sun-web`; `assistant-web` dihentikan karena kembar. API lewat alamat relatif `/api` (satu host dengan gateway, tanpa CORS).
 
 ## 9. Docker dan operasional lokal
 
-- Satu `docker-compose.yml` di root: `mysql`, `redis`, `gateway`, 6 backend, `wms-web`, dan **satu worker queue per service** (container terpisah dengan `php artisan queue:work redis --queue=<nama>`).
+- Satu `docker-compose.yml` di root: `mysql`, `redis`, `gateway`, 6 backend, `sun-web`, dan **satu worker queue per service** (container terpisah dengan `php artisan queue:work redis --queue=<nama>`).
 - Entrypoint tiap backend: tunggu DB sehat, `migrate --force`, seed bila DB kosong, lalu serve. Hasilnya `docker compose up --build` langsung bisa dipakai.
 - Healthcheck di setiap service (`GET /api/health`) dan `depends_on: service_healthy`.
 - Satu `.env.example` per service; `docker/init.sql` membuat semua DB dan user per-DB.

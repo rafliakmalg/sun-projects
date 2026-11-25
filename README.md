@@ -13,16 +13,15 @@ Tiap service punya repo sendiri dan harus berada di folder ini, sejajar dengan `
 | `auth-ep` | login, users, roles, permissions, penerbit JWT | 8001 |
 | `wms-ep` | gudang, rak, barang, stok, pemindahan | 8002 |
 | `assistant-ep` | asisten AI (tool dengan izin per user) | 8006 |
-| `wms-web` | frontend React | 3000 |
-| `assistant-web` | klien chat terpisah | dev server |
+| `sun-web` | satu-satunya frontend (React), termasuk halaman dan panel asisten | 3000 |
 
-Semua API diakses lewat gateway nginx di `http://localhost:8000` (`/api/auth`, `/api/wms`, `/api/assistant`).
+Frontend dan semua API berada di satu alamat: gateway nginx di `http://localhost:8000` (`/` untuk frontend, `/api/auth`, `/api/wms`, `/api/assistant` untuk backend).
 
 ## Menjalankan
 
 Prasyarat: Docker Desktop, PHP dan Composer (untuk membuat `APP_KEY`), Git Bash atau terminal dengan `openssl`.
 
-1. Kloning kelima repo service ke folder ini.
+1. Kloning keempat repo service ke folder ini.
 2. Buat key JWT: `bash scripts/generate-keys.sh`
 3. Di tiap `*-ep`: salin `.env.example` menjadi `.env`, lalu `php artisan key:generate`. Isi API key LLM di `assistant-ep/.env`.
 4. `docker compose up --build`
